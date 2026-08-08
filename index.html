@@ -63,6 +63,7 @@
             flex-direction: column;
             align-items: center;
             transition: all 0.6s ease-in-out;
+            width: 100%;
         }
 
         .hidden {
@@ -96,7 +97,7 @@
             }
         }
 
-        .btn-continue {
+        .btn-continue, .btn-submit {
             margin-top: 25px;
             background-color: #ff4757;
             color: white;
@@ -108,10 +109,13 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
             transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-continue {
             animation: pulse 2s infinite;
         }
 
-        .btn-continue:hover {
+        .btn-continue:hover, .btn-submit:hover {
             background-color: #ff6b81;
             transform: scale(1.05);
         }
@@ -124,13 +128,15 @@
 
         .message-card {
             background: rgba(255, 255, 255, 0.9);
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
             max-width: 320px;
             transform: translateY(30px);
             opacity: 0;
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+            box-sizing: border-box;
         }
 
         .message-card.show {
@@ -139,17 +145,54 @@
         }
 
         .message-text {
-            font-size: 18px;
+            font-size: 16px;
             color: #333;
-            line-height: 1.6;
-            margin: 0;
+            line-height: 1.5;
+            margin: 0 0 15px 0;
             font-weight: 600;
         }
 
         .message-text span {
             display: block;
-            margin-top: 8px;
+            margin-top: 5px;
             color: #ff4757;
+        }
+
+        .reply-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .reply-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #fecfef;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .reply-input:focus {
+            border-color: #ff4757;
+        }
+
+        .btn-submit {
+            margin-top: 5px;
+            padding: 8px 20px;
+            font-size: 15px;
+        }
+
+        .success-msg {
+            color: #2ed573;
+            font-weight: bold;
+            font-size: 15px;
+            margin-top: 10px;
+            display: none;
         }
 
         .heart {
@@ -184,18 +227,31 @@
     <img src="kawai-goodnight.gif" alt="Cute Right GIF" class="side-gif right">
 
     <div class="container">
+        <!-- Scene 1 -->
         <div id="scene1" class="screen">
             <img src="IMG_20260129_165548_378.jpg" alt="Cute Cartoon" class="cartoon-img">
             <button class="btn-continue" onclick="showSecondScene()">Tap to Continue ❤️</button>
         </div>
 
+        <!-- Scene 2 -->
         <div id="scene2" class="screen hidden">
-            <img src="IMG_20260129_165548_378.jpg" alt="Cute Cartoon" class="cartoon-img" style="animation: none; margin-bottom: 15px; width: 140px; height: 140px;">
+            <img src="IMG_20260129_165548_378.jpg" alt="Cute Cartoon" class="cartoon-img" style="animation: none; margin-bottom: 12px; width: 110px; height: 110px;">
             <div id="messageCard" class="message-card">
                 <p class="message-text">
                     Do not forget to eat, to pray, and always take care! 
                     <span>I love you! ❤️</span>
                 </p>
+                
+                <!-- Email Form -->
+                <form id="emailForm" class="reply-form" onsubmit="sendEmail(event)">
+                    <!-- REPLACE THE VALUE BELOW WITH YOUR ACTUAL EMAIL ACCESS KEY -->
+                    <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY_HERE">
+                    <input type="hidden" name="subject" value="New secret message from your special page! 💌">
+                    
+                    <textarea name="message" class="reply-input" rows="3" placeholder="Send a message for me!" required></textarea>
+                    <button type="submit" class="btn-submit">Send</button>
+                </form>
+                <div id="successMsg" class="success-msg">Message sent successfully!</div>
             </div>
         </div>
     </div>
@@ -243,6 +299,38 @@
                 messageCard.classList.add('show');
                 startFloatingHearts();
             }, 100);
+        }
+
+        function sendEmail(event) {
+            event.preventDefault();
+            const form = document.getElementById('emailForm');
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('.btn-submit');
+            
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+s://
+            fetch('https://formsubmit.co/ajax/samuelbagayan2010@gmail.com', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async (response) => {
+                let json = await response.json();
+                if (response.status == 200) {
+                    form.style.display = 'none';
+                    document.getElementById('successMsg').style.display = 'block';
+                } else {
+                    alert(json.message);
+                    submitBtn.textContent = 'Send';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                alert("Something went wrong!");
+                submitBtn.textContent = 'Send';
+                submitBtn.disabled = false;
+            });
         }
 
         function startFloatingHearts() {
