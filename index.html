@@ -200,7 +200,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         function speakMessage() {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -210,19 +210,19 @@
 
                 let voices = window.speechSynthesis.getVoices();
                 let selectedVoice = voices.find(voice => 
-                    voice.name.includes('Google US English') || 
-                    voice.name.includes('Samantha') || 
-                    voice.name.includes('Victoria') || 
-                    voice.name.includes('Female') ||
-                    voice.lang.includes('en')
+                    voice.name.includes('David') || 
+                    voice.name.includes('Mark') || 
+                    voice.name.includes('George') || 
+                    voice.name.includes('Male') ||
+                    voice.name.includes('UK English Male')
                 );
 
                 if (selectedVoice) {
                     utterance.voice = selectedVoice;
                 }
 
-                utterance.pitch = 1.4;
-                utterance.rate = 0.95;
+                utterance.pitch = 1.8; 
+                utterance.rate = 1.1;  
                 utterance.volume = 1.0;
 
                 window.speechSynthesis.speak(utterance);
