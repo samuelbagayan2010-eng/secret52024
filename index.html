@@ -137,6 +137,7 @@
             opacity: 0;
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
             box-sizing: border-box;
+            z-index: 5;
         }
 
         .message-card.show {
@@ -195,21 +196,81 @@
             display: none;
         }
 
-        .heart {
-            position: absolute;
-            color: #ff4757;
-            font-size: 20px;
-            animation: floatUp 3s linear infinite;
+        /* Center Giant Blooming Flower Pop */
+        #centerFlowerOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
             opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        #centerFlowerOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .giant-flower-img {
+            width: 220px;
+            height: auto;
+            animation: giantPopIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
+        }
+
+        @keyframes giantPopIn {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.2) rotate(15deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Floating items layer overlay covering the entire viewport with a high z-index so they float over everything */
+        #rainContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .floating-item {
+            position: absolute;
+            font-size: 28px;
+            animation: floatUp 3.5s linear infinite;
+            opacity: 0;
+        }
+
+        .floating-flower-img {
+            width: 35px;
+            height: auto;
         }
 
         @keyframes floatUp {
             0% {
-                transform: translateY(0) scale(0.6);
+                transform: translateY(0) scale(0.4) rotate(0deg);
                 opacity: 1;
             }
             100% {
-                transform: translateY(-150px) scale(1.4);
+                transform: translateY(-100vh) scale(1.4) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -225,6 +286,14 @@
 
     <img src="bubu-dudu-dudu.gif" alt="Cute Left GIF" class="side-gif left">
     <img src="kawai-goodnight.gif" alt="Cute Right GIF" class="side-gif right">
+
+    <!-- Center Big Flower Overlay Popup -->
+    <div id="centerFlowerOverlay">
+        <img src="watermarked_img_5002360542700253134-removebg-preview.png" alt="Giant Bouquet" class="giant-flower-img">
+    </div>
+
+    <!-- Container for floating flowers/hearts animation overlaying everything -->
+    <div id="rainContainer"></div>
 
     <div class="container">
         <!-- Scene 1 -->
@@ -244,10 +313,7 @@
                 
                 <!-- Email Form -->
                 <form id="emailForm" class="reply-form" onsubmit="sendEmail(event)">
-                    <!-- REPLACE THE VALUE BELOW WITH YOUR ACTUAL EMAIL ACCESS KEY -->
-                    <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY_HERE">
-                    <input type="hidden" name="subject" value="New secret message from your special page! 💌">
-                    
+                    <input type="hidden" name="_subject" value="New secret message from your special page! 💌">
                     <textarea name="message" class="reply-input" rows="3" placeholder="Send a message for me!" required></textarea>
                     <button type="submit" class="btn-submit">Send</button>
                 </form>
@@ -256,38 +322,47 @@
         </div>
     </div>
 
-<script>
+    <script>
         function speakMessage() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+            return new Promise((resolve) => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
 
-                const textToSpeak = "Do not forget to eat, to pray, and always take care!";
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    const textToSpeak = "Do not forget to eat, to pray, and always take care!";
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
-                let voices = window.speechSynthesis.getVoices();
-                let selectedVoice = voices.find(voice => 
-                    voice.name.includes('David') || 
-                    voice.name.includes('Mark') || 
-                    voice.name.includes('George') || 
-                    voice.name.includes('Male') ||
-                    voice.name.includes('UK English Male')
-                );
+                    let voices = window.speechSynthesis.getVoices();
+                    let selectedVoice = voices.find(voice => 
+                        voice.name.includes('David') || 
+                        voice.name.includes('Mark') || 
+                        voice.name.includes('George') || 
+                        voice.name.includes('Male') ||
+                        voice.name.includes('UK English Male')
+                    );
 
-                if (selectedVoice) {
-                    utterance.voice = selectedVoice;
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+
+                    utterance.pitch = 1.8; 
+                    utterance.rate = 1.1;  
+                    utterance.volume = 1.0;
+
+                    utterance.onend = () => {
+                        resolve();
+                    };
+                    utterance.onerror = () => {
+                        resolve();
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    resolve();
                 }
-
-                utterance.pitch = 1.8; 
-                utterance.rate = 1.1;  
-                utterance.volume = 1.0;
-
-                window.speechSynthesis.speak(utterance);
-            }
+            });
         }
 
-        function showSecondScene() {
-            speakMessage();
-
+        async function showSecondScene() {
             const scene1 = document.getElementById('scene1');
             scene1.classList.add('hidden');
 
@@ -297,8 +372,25 @@
             setTimeout(() => {
                 const messageCard = document.getElementById('messageCard');
                 messageCard.classList.add('show');
-                startFloatingHearts();
             }, 100);
+
+            // Wait for the text to finish speaking completely
+            await speakMessage();
+
+            // After speech finishes, trigger the big center flower pop-up sequence
+            triggerGiantCenterFlower();
+        }
+
+        function triggerGiantCenterFlower() {
+            const overlay = document.getElementById('centerFlowerOverlay');
+            
+            overlay.classList.add('active');
+
+            // Automatically hide the giant center flower after 2.5 seconds and start background rain
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                startFlowerAndHeartRain();
+            }, 2500);
         }
 
         function sendEmail(event) {
@@ -309,18 +401,21 @@
             
             submitBtn.textContent = 'Sending...';
             submitBtn.disabled = true;
-s://
+
             fetch('https://formsubmit.co/ajax/samuelbagayan2010@gmail.com', {
                 method: 'POST',
+                headers: { 
+                    'Accept': 'application/json'
+                },
                 body: formData
             })
             .then(async (response) => {
                 let json = await response.json();
-                if (response.status == 200) {
+                if (response.status === 200 || json.success === "true") {
                     form.style.display = 'none';
                     document.getElementById('successMsg').style.display = 'block';
                 } else {
-                    alert(json.message);
+                    alert(json.message || "Something went wrong!");
                     submitBtn.textContent = 'Send';
                     submitBtn.disabled = false;
                 }
@@ -333,22 +428,35 @@ s://
             });
         }
 
-        function startFloatingHearts() {
+        function startFlowerAndHeartRain() {
+            const rainContainer = document.getElementById('rainContainer');
+            
+            // Continuous loop for floating background flowers and hearts over the entire screen
             setInterval(() => {
-                const heart = document.createElement('div');
-                heart.classList.add('heart');
-                heart.innerHTML = '❤️';
+                const el = document.createElement('div');
+                el.classList.add('floating-item');
                 
-                const randomX = Math.floor(Math.random() * 200) - 100;
-                heart.style.left = `calc(50% + ${randomX}px)`;
-                heart.style.bottom = '50px';
+                const chooseFlower = Math.random() < 0.7;
+                if (chooseFlower) {
+                    const img = document.createElement('img');
+                    img.src = 'watermarked_img_5002360542700253134-removebg-preview.png';
+                    img.classList.add('floating-flower-img');
+                    el.appendChild(img);
+                } else {
+                    el.innerHTML = '❤️';
+                }
                 
-                document.getElementById('scene2').appendChild(heart);
+                // Random horizontal position across the full viewport width
+                const randomX = Math.random() * window.innerWidth;
+                el.style.left = `${randomX}px`;
+                el.style.bottom = '-50px';
+                
+                rainContainer.appendChild(el);
 
                 setTimeout(() => {
-                    heart.remove();
-                }, 3000);
-            }, 400);
+                    el.remove();
+                }, 3500);
+            }, 200);
         }
     </script>
 </body>
