@@ -196,8 +196,8 @@
             display: none;
         }
 
-        /* Center Giant Blooming Flower Pop */
-        #centerFlowerOverlay {
+        /* Center Giant Sequential Popup Overlay */
+        #centerOverlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -213,31 +213,46 @@
             transition: opacity 0.5s ease;
         }
 
-        #centerFlowerOverlay.active {
+        #centerOverlay.active {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        .overlay-content {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .popup-item {
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .popup-item.active {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .giant-flower-img {
             width: 220px;
             height: auto;
-            animation: giantPopIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
         }
 
-        @keyframes giantPopIn {
-            0% {
-                transform: scale(0) rotate(-180deg);
-                opacity: 0;
-            }
-            70% {
-                transform: scale(1.2) rotate(15deg);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
+        .center-popup-text {
+            color: white;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            white-space: nowrap;
         }
 
         /* Floating items layer overlay covering the entire viewport with a high z-index so they float over everything */
@@ -287,9 +302,16 @@
     <img src="bubu-dudu-dudu.gif" alt="Cute Left GIF" class="side-gif left">
     <img src="kawai-goodnight.gif" alt="Cute Right GIF" class="side-gif right">
 
-    <!-- Center Big Flower Overlay Popup -->
-    <div id="centerFlowerOverlay">
-        <img src="watermarked_img_5002360542700253134-removebg-preview.png" alt="Giant Bouquet" class="giant-flower-img">
+    <!-- Center Sequential Popup Overlay -->
+    <div id="centerOverlay">
+        <div class="overlay-content">
+            <div id="popupFlower" class="popup-item">
+                <img src="watermarked_img_5002360542700253134-removebg-preview.png" alt="Giant Bouquet" class="giant-flower-img">
+            </div>
+            <div id="popupText" class="popup-item center-popup-text">
+                I MISS YOU ❤️
+            </div>
+        </div>
     </div>
 
     <!-- Container for floating flowers/hearts animation overlaying everything -->
@@ -377,20 +399,32 @@
             // Wait for the text to finish speaking completely
             await speakMessage();
 
-            // After speech finishes, trigger the big center flower pop-up sequence
-            triggerGiantCenterFlower();
+            // After speech finishes, trigger the sequential popup sequence
+            triggerSequentialPopup();
         }
 
-        function triggerGiantCenterFlower() {
-            const overlay = document.getElementById('centerFlowerOverlay');
+        function triggerSequentialPopup() {
+            const overlay = document.getElementById('centerOverlay');
+            const popupFlower = document.getElementById('popupFlower');
+            const popupText = document.getElementById('popupText');
             
             overlay.classList.add('active');
+            
+            // Step 1: Show flower first
+            popupFlower.classList.add('active');
 
-            // Automatically hide the giant center flower after 2.5 seconds and start background rain
+            // Step 2: After 1.5 seconds, hide flower and show text in the exact same center position
             setTimeout(() => {
+                popupFlower.classList.remove('active');
+                popupText.classList.add('active');
+            }, 1600);
+
+            // Step 3: After another 1.6 seconds, hide text, close overlay, and start background rain
+            setTimeout(() => {
+                popupText.classList.remove('active');
                 overlay.classList.remove('active');
                 startFlowerAndHeartRain();
-            }, 2500);
+            }, 3200);
         }
 
         function sendEmail(event) {
