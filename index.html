@@ -205,7 +205,7 @@
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
 
-                const textToSpeak = "Do not forget to eat, to pray, and always take care! I love you!";
+                const textToSpeak = "Do not forget to eat, to pray, and always take care!";
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
                 let voices = window.speechSynthesis.getVoices();
